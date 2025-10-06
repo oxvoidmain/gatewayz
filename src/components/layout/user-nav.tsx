@@ -35,7 +35,6 @@ export function UserNav({ user }: UserNavProps) {
     try {
       await logout();
       toast({ title: "Signed out successfully" });
-      // router.push("/signin");
     } catch (error) {
       toast({
         title: "Error signing out",

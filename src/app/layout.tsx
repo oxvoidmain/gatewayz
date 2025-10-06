@@ -7,14 +7,22 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { PrivyProviderWrapper } from '@/components/providers/privy-provider';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Inter } from 'next/font/google';
-import Script from "next/script";
-import ClientLayout from './client-layout';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Modelz',
-  description: 'AI model performance and news dashboard.',
+  title: 'Gatewayz - One Interface To Work With Any LLM',
+  description: 'From Idea To Production, Gatewayz Gives AI Teams The Toolkit, Savings, And Reliability They Need.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -24,18 +32,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Script
-        src="https://www.googletagmanager.com/gtag/js?id=G-MZM6XC3MQ5"
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}  
-          gtag('js', new Date());
-          gtag('config', 'G-MZM6XC3MQ5');
-        `}
-      </Script>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -47,9 +43,6 @@ export default function RootLayout({
           storageKey="ui-theme"
         >
           <ErrorBoundary>
-            {/* <ClientLayout>
-              {children}
-            </ClientLayout> */}
             <PrivyProviderWrapper>
               <AppHeader />
               {children}

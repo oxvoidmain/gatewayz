@@ -6,96 +6,131 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, ChevronRight, GitMerge, ShieldCheck, TrendingUp, User, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
-const FeaturedModelCard = ({ 
-  model, 
-  isNew, 
-  isActive, 
-  onClick 
-}: { 
-  model: { name: string, by: string, tokens: string, latency: string, growth: string, color: string }, 
+interface FeaturedModel {
+  name: string;
+  by: string;
+  tokens: string;
+  latency: string;
+  growth: string;
+  color: string;
+  logo_url?: string;
+}
+
+const FeaturedModelCard = ({
+  model,
+  isNew,
+  isActive,
+  onClick
+}: {
+  model: FeaturedModel,
   isNew?: boolean,
   isActive?: boolean,
   onClick?: () => void
 }) => (
-    <div 
-      className={`h-[144px] bg-card border rounded-lg shadow-sm hover:shadow-md transition-all duration-500 ease-in-out cursor-pointer overflow-hidden ${
-        isActive 
-          ? 'border-2 border-[rgba(81,177,255,1)] shadow-lg w-auto min-w-[400px] flex-shrink-0 shadow-[0px_0px_6px_0px_rgba(81,177,255,1)]' 
-          : 'border-gray-200 hover:border-gray-300 w-20 min-w-[82px] flex-shrink-0'
+    <div
+      className={`h-[144px] bg-card border rounded-lg shadow-sm hover:shadow-md cursor-pointer overflow-hidden relative ${
+        isActive
+          ? 'border-2 border-[rgba(81,177,255,1)] shadow-lg w-auto min-w-[280px] sm:min-w-[350px] md:min-w-[400px] flex-shrink-0 shadow-[0px_0px_6px_0px_rgba(81,177,255,1)]'
+          : 'border-gray-200 hover:border-gray-300 w-20 sm:w-24 min-w-[80px] sm:min-w-[96px] flex-shrink-0'
       }`}
+      style={{
+        transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)'
+      }}
       onClick={onClick}
     >
-      {/* Compact view - always visible */}
-      {!isActive && (
-      <div className="p-3 flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100">
-          {model.by === 'google' && (
-            <div className="flex">
-              <img src="/devicon_google.svg" alt="Google" width="42" height="42" />
-            </div>
-          )}
-          {model.by === 'openai' && (
-            <div className="flex">
-              <img src="/devicon_google.svg" alt="OpenAI" width="42" height="42" />
-            </div>
-          )}
-          {model.by === 'anthropic' && (
-            <div className="flex">
-              <img src="/devicon_google.svg" alt="Anthropic" width="42" height="42" />
-            </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Expanded view - only visible when active */}
-      {isActive && (
-        <div className="px-4 py-3">
-          <div className="flex gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100">
+      {/* Compact view */}
+      <div
+        className={`absolute inset-0 p-2 flex flex-col items-center justify-center gap-2 transition-opacity duration-500 ${
+          isActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+      >
+        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 flex-shrink-0">
+          {model.logo_url ? (
+            <img src={model.logo_url} alt={model.by} width="42" height="42" />
+          ) : (
+            <>
               {model.by === 'google' && (
                 <div className="flex">
-                  <img src="/devicon_google.svg" alt="Google" width="42" height="42" />
+                  <img src="/Google_Logo-black.svg" alt="Google" width="42" height="42" />
                 </div>
               )}
               {model.by === 'openai' && (
                 <div className="flex">
-                  <img src="/devicon_google.svg" alt="OpenAI" width="42" height="42" />
+                  <img src="/OpenAI_Logo-black.svg" alt="OpenAI" width="42" height="42" />
                 </div>
               )}
               {model.by === 'anthropic' && (
                 <div className="flex">
-                  <img src="/devicon_google.svg" alt="Anthropic" width="42" height="42" />
+                  <img src="/Meta_Logo-black.svg" alt="Anthropic" width="42" height="42" />
                 </div>
+              )}
+            </>
+          )}
+        </div>
+        <div className="text-center">
+          <p className={`text-lg font-bold ${model.growth.startsWith('-') ? 'text-red-500' : 'text-green-500'}`}>
+            {model.growth}
+          </p>
+          <p className="text-[10px] text-gray-600 leading-tight">Weekly Growth</p>
+        </div>
+      </div>
+
+      {/* Expanded view */}
+      <div
+        className={`absolute inset-0 px-2 sm:px-4 py-2 sm:py-3 transition-opacity duration-500 ${
+          isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="flex gap-2 sm:gap-3 mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-gray-100 flex-shrink-0">
+              {model.logo_url ? (
+                <img src={model.logo_url} alt={model.by} className="w-8 h-8 sm:w-10 sm:h-10" />
+              ) : (
+                <>
+                  {model.by === 'google' && (
+                    <div className="flex">
+                      <img src="/Google_Logo-black.svg" alt="Google" className="w-8 h-8 sm:w-10 sm:h-10" />
+                    </div>
+                  )}
+                  {model.by === 'openai' && (
+                    <div className="flex">
+                      <img src="/OpenAI_Logo-black.svg" alt="OpenAI" className="w-8 h-8 sm:w-10 sm:h-10" />
+                    </div>
+                  )}
+                  {model.by === 'anthropic' && (
+                    <div className="flex">
+                      <img src="/Meta_Logo-black.svg" alt="Anthropic" className="w-8 h-8 sm:w-10 sm:h-10" />
+                    </div>
+                  )}
+                </>
               )}
             </div>
             <div>
-              <h3 className="font-bold text-base text-black">{model.name}</h3>
-              <span>By</span><span className="text-sm text-blue-600"> {model.by.charAt(0).toUpperCase() + model.by.slice(1)}</span>
+              <h3 className="font-bold text-sm sm:text-base text-black">{model.name}</h3>
+              <span className="text-xs sm:text-sm">By</span><span className="text-xs sm:text-sm text-blue-600"> {model.by.charAt(0).toUpperCase() + model.by.slice(1)}</span>
             </div>
           </div>
-          
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-black">{model.tokens}</p>
-              <p className="text-sm text-gray-600">Tokens/Sec</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-black">{model.latency}</p>
-              <p className="text-sm text-gray-600">Latency</p>
-            </div>
-            <div className="text-center">
-              <p className={`text-2xl font-bold ${model.growth.startsWith('-') ? 'text-red-500' : 'text-green-500'}`}>
-                {model.growth}
-              </p>
-              <p className="text-sm text-gray-600">Weekly Growth</p>
-            </div>
+
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          <div className="text-center">
+            <p className="text-lg sm:text-xl md:text-2xl font-bold text-black">{model.tokens}</p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-gray-600">Tokens/Sec</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg sm:text-xl md:text-2xl font-bold text-black">{model.latency}</p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-gray-600">Latency</p>
+          </div>
+          <div className="text-center">
+            <p className={`text-lg sm:text-xl md:text-2xl font-bold ${model.growth.startsWith('-') ? 'text-red-500' : 'text-green-500'}`}>
+              {model.growth}
+            </p>
+            <p className="text-[10px] sm:text-xs md:text-sm text-gray-600">Weekly Growth</p>
           </div>
         </div>
-      )}
+      </div>
     </div>
 )
 
@@ -140,24 +175,62 @@ const AnnouncementCard = ({ title, description, date, isNew }: { title: string, 
     </div>
 )
 
-
 export default function Home() {
   const [activeModelIndex, setActiveModelIndex] = useState<number | null>(0);
   const [message, setMessage] = useState('');
   const router = useRouter();
   const [apiKey, setApiKey] = useState('0000000000000000000000000000000000000000');
-  const featuredModels = [
-      { name: 'Gemini 2.5 Pro', by: 'google', tokens: '170.06', latency: '2.6s', growth: '+13.06%', color: 'bg-blue-400' },
-      { name: 'GPT-5 Chat', by: 'openai', tokens: '20.98', latency: '850ms', growth: '--', color: 'bg-green-400' },
-      { name: 'Claude Sonnet 4', by: 'anthropic', tokens: '585.26', latency: '1.9s', growth: '-9.04%', color: 'bg-purple-400' },
-      { name: 'Gemini 2.5 Pro', by: 'google', tokens: '170.06', latency: '2.6s', growth: '+13.06%', color: 'bg-blue-400' },
-      { name: 'GPT-5 Chat', by: 'openai', tokens: '20.98', latency: '850ms', growth: '--', color: 'bg-green-400' },
-      { name: 'Claude Sonnet 4', by: 'anthropic', tokens: '585.26', latency: '1.9s', growth: '-9.04%', color: 'bg-purple-400' },
-      { name: 'Gemini 2.5 Pro', by: 'google', tokens: '170.06', latency: '2.6s', growth: '+13.06%', color: 'bg-blue-400' },
-      { name: 'GPT-5 Chat', by: 'openai', tokens: '20.98', latency: '850ms', growth: '--', color: 'bg-green-400' },
-      { name: 'Claude Sonnet 4', by: 'anthropic', tokens: '585.26', latency: '1.9s', growth: '-9.04%', color: 'bg-purple-400' },
-      { name: 'Gemini 2.5 Pro', by: 'google', tokens: '170.06', latency: '2.6s', growth: '+13.06%', color: 'bg-blue-400' }
-  ];
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [carouselOffset, setCarouselOffset] = useState(0);
+  const [featuredModels, setFeaturedModels] = useState<FeaturedModel[]>([
+      { name: 'Gemini 2.5 Pro', by: 'google', tokens: '170.06', latency: '2.6s', growth: '+13.06%', color: 'bg-blue-400', logo_url: '/google-logo.svg' },
+      { name: 'GPT-5 Chat', by: 'openai', tokens: '20.98', latency: '850ms', growth: '--', color: 'bg-green-400', logo_url: '/openai-logo.svg' },
+      { name: 'Claude Sonnet 4', by: 'anthropic', tokens: '585.26', latency: '1.9s', growth: '-9.04%', color: 'bg-purple-400', logo_url: '/anthropic-logo.svg' },
+      { name: 'Gemini 2.5 Pro', by: 'google', tokens: '170.06', latency: '2.6s', growth: '+13.06%', color: 'bg-blue-400', logo_url: '/google-logo.svg' },
+      { name: 'GPT-5 Chat', by: 'openai', tokens: '20.98', latency: '850ms', growth: '--', color: 'bg-green-400', logo_url: '/openai-logo.svg' },
+      { name: 'Claude Sonnet 4', by: 'anthropic', tokens: '585.26', latency: '1.9s', growth: '-9.04%', color: 'bg-purple-400', logo_url: '/anthropic-logo.svg' },
+      { name: 'Gemini 2.5 Pro', by: 'google', tokens: '170.06', latency: '2.6s', growth: '+13.06%', color: 'bg-blue-400', logo_url: '/google-logo.svg' },
+      { name: 'GPT-5 Chat', by: 'openai', tokens: '20.98', latency: '850ms', growth: '--', color: 'bg-green-400', logo_url: '/openai-logo.svg' },
+      { name: 'Claude Sonnet 4', by: 'anthropic', tokens: '585.26', latency: '1.9s', growth: '-9.04%', color: 'bg-purple-400', logo_url: '/anthropic-logo.svg' },
+      { name: 'Gemini 2.5 Pro', by: 'google', tokens: '170.06', latency: '2.6s', growth: '+13.06%', color: 'bg-blue-400', logo_url: '/google-logo.svg' }
+  ]);
+
+  // Auto-advance carousel every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveModelIndex((prev) => {
+        if (prev === null) return 0;
+        return (prev + 1) % featuredModels.length;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [featuredModels.length]);
+
+  // Double the models array for infinite scrolling
+  const displayModels = [...featuredModels, ...featuredModels];
+
+  // Calculate offset - just measure collapsed card widths, not the expanded one
+  useEffect(() => {
+    const updateOffset = () => {
+      if (carouselRef.current && activeModelIndex !== null) {
+        // Assume compact cards are ~96px on desktop, ~80px on mobile
+        // Expanded card is ~400px on desktop, ~280px on mobile
+        const compactWidth = window.innerWidth >= 640 ? 96 : 80;
+        const gap = 8;
+
+        // Calculate offset: number of cards before active * (compact width + gap)
+        const offset = activeModelIndex * (compactWidth + gap);
+
+        setCarouselOffset(-offset);
+      }
+    };
+
+    updateOffset();
+    const timer = setTimeout(updateOffset, 100);
+
+    return () => clearTimeout(timer);
+  }, [activeModelIndex]);
 
   const handleModelClick = (index: number) => {
     setActiveModelIndex(index);
@@ -191,23 +264,27 @@ export default function Home() {
           className="absolute top-8 left-1/2 transform -translate-x-1/2 w-[450px] h-[450px] lg:w-[640px] lg:h-[640px] xl:w-[768px] xl:h-[768px]" 
         />
         
-        <section className="grid md:grid-cols-1 gap-6 items-center md:py-[140px]" >
-          <div className="space-y-6 ">
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-center" style={{  fontFamily: 'Inter, sans-serif',}}>One Interface To </h1>
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-center">Work With Any LLM</h1>
-            <p className="text-lg  text-center">From Idea To Production, Gatewayz Gives AI Teams The Toolkit, Savings, And Reliability They Need.</p>
+        <section className="grid md:grid-cols-1 gap-8 items-center py-8 md:py-[140px] mb-16 md:mb-32 max-w-5xl mx-auto px-4" >
+          <div className="space-y-6 md:space-y-8 px-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tighter text-center" style={{  fontFamily: 'Inter, sans-serif',}}>One Interface To </h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tighter text-center">Work With Any LLM</h1>
+            <p className="text-sm sm:text-base md:text-lg text-center px-4 py-6">From Idea To Production, Gatewayz Gives AI Teams The Toolkit, Savings, And Reliability They Need.</p>
           </div>
-          <div className="relative">
-            <Input 
-              placeholder="Start a message..." 
-              className="h-12 pr-14 bg-input" 
+          <div className="relative mt-4">
+            <Input
+              placeholder="Start a message..."
+              className="h-12 pr-14 bg-input"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
+              autoComplete="off"
+              data-form-type="other"
+              type="text"
             />
-            <button 
+            <button
               className="absolute right-2 top-1/2 -translate-y-1/2"
               onClick={handleSendMessage}
+              type="button"
             >
               <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="34" height="34" rx="8" fill="black"/>
@@ -215,25 +292,36 @@ export default function Home() {
               </svg>
             </button>
           </div>
-          <div>
-            <div className="flex justify-between pb-2 relative z-10">
-                {featuredModels.map((model, i) => (
-                  <FeaturedModelCard 
-                    key={i} 
-                    model={model} 
-                    isNew={model.name.includes('GPT-5')} 
-                    isActive={activeModelIndex === i}
-                    onClick={() => handleModelClick(i)}
-                  />
-                ))}
+          <div className="overflow-hidden relative -mx-4 mt-6">
+            <div
+              ref={carouselRef}
+              className="flex pb-2 relative z-10 gap-2"
+              style={{
+                transform: `translateX(${carouselOffset}px)`,
+                transition: 'transform 700ms cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
+            >
+                {displayModels.map((model, i) => {
+                  const modelIndex = i % featuredModels.length;
+                  const isFirstSet = i < featuredModels.length;
+                  return (
+                    <FeaturedModelCard
+                      key={i}
+                      model={model}
+                      isNew={model.name.includes('GPT-5')}
+                      isActive={isFirstSet && modelIndex === activeModelIndex}
+                      onClick={() => handleModelClick(modelIndex)}
+                    />
+                  );
+                })}
             </div>
           </div>
-          
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm z-10">
+
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm z-10 mt-6">
               <div className=" px-6 py-[10px] flex flex-row items-center justify-between">
                 <div className="font-bold tracking-tight text-lg">Top Models This Month</div>
               <Link href="/rankings">
-                <Button variant="link" className="text-sm">View Trending 
+                <Button variant="link" className="text-sm">View Trending
                   <span>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M2.66671 8H13.3334M13.3334 8L9.33337 12M13.3334 8L9.33337 4" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -253,26 +341,26 @@ export default function Home() {
             <StatItem value="400+" label="Models" />
         </section> */}
 
-        <section className="mb-24">
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-center">Connected TO 1000+ AI Models</h2>
+        <section className="mb-12 md:mb-24 px-4">
+          <div className="mb-8 md:mb-12">
+            <h2 className="text-xl sm:text-2xl font-bold text-center">Connected TO 1000+ AI Models</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 ">
-            <img src="/OpenAi_Logo-black.svg" alt="Stats" width="80%" height="80%" />
-            <img src="/Google_Logo-black.svg" alt="Stats" width="70%" height="70%" />
-            <img src="/DeepSeek_Logo-black.svg" alt="Stats" width="80%" height="80%" />
-            <img src="/Meta_Logo-black.svg" alt="Stats" width="80%" height="80%" />
-            <img src="/DeepSeek_Logo-black.svg" alt="Stats" width="80%" height="80%" />    
-            <img src="/OpenAi_Logo-black.svg" alt="Stats" width="80%" height="80%" />
-            <img src="/Google_Logo-black.svg" alt="Stats" width="70%" height="70%" />
-            <img src="/DeepSeek_Logo-black.svg" alt="Stats" width="80%" height="80%" />
-            <img src="/Meta_Logo-black.svg" alt="Stats" width="80%" height="80%" />
-            <img src="/DeepSeek_Logo-black.svg" alt="Stats" width="80%" height="80%" />
-            <img src="/OpenAi_Logo-black.svg" alt="Stats" width="80%" height="80%" />
-            <img src="/Google_Logo-black.svg" alt="Stats" width="70%" height="70%" />
-            <img src="/DeepSeek_Logo-black.svg" alt="Stats" width="80%" height="80%" />
-            <img src="/Meta_Logo-black.svg" alt="Stats" width="80%" height="80%" />
-            <img src="/DeepSeek_Logo-black.svg" alt="Stats" width="80%" height="80%" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-8 items-center justify-items-center">
+            <img src="/OpenAI_Logo-black.svg" alt="OpenAI" width="80%" height="80%" />
+            <img src="/Google_Logo-black.svg" alt="Google" width="70%" height="70%" />
+            <img src="/DeepSeek_Logo-black.svg" alt="DeepSeek" width="80%" height="80%" />
+            <img src="/Meta_Logo-black.svg" alt="Meta" width="80%" height="80%" />
+            <img src="/OpenAI_Logo-black.svg" alt="OpenAI" width="80%" height="80%" />
+            <img src="/Google_Logo-black.svg" alt="Google" width="80%" height="80%" />
+            <img src="/DeepSeek_Logo-black.svg" alt="DeepSeek" width="70%" height="70%" />
+            <img src="/Meta_Logo-black.svg" alt="Meta" width="80%" height="80%" />
+            <img src="/OpenAI_Logo-black.svg" alt="OpenAI" width="80%" height="80%" />
+            <img src="/Google_Logo-black.svg" alt="Google" width="80%" height="80%" />
+            <img src="/DeepSeek_Logo-black.svg" alt="DeepSeek" width="80%" height="80%" />
+            <img src="/Meta_Logo-black.svg" alt="Meta" width="70%" height="70%" />
+            <img src="/OpenAI_Logo-black.svg" alt="OpenAI" width="80%" height="80%" />
+            <img src="/Google_Logo-black.svg" alt="Google" width="80%" height="80%" />
+            <img src="/DeepSeek_Logo-black.svg" alt="DeepSeek" width="80%" height="80%" />
             </div>
         </section>
 
